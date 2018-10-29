@@ -9,6 +9,7 @@
         }
     ],
     "require": {
-        "google/cloud-spanner": "^1.11"
+        "google/cloud-spanner": "^1.11",
+        "opencensus/opencensus": "~0.2"
     }
 }
