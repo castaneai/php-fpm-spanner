@@ -10,5 +10,10 @@ services:
 
   php:
     build: php/
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /key.json
+    env_file:
+      - php/.env
     volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/key.json:ro
       - ./php:/src

@@ -1,0 +1,14 @@
+{
+    "name": "castaneai/php",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "castaneai",
+            "email": "castaneai@castaneai.net"
+        }
+    ],
+    "require": {
+        "google/cloud-spanner": "^1.11"
+    }
+}
