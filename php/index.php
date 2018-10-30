@@ -4,7 +4,7 @@ require __DIR__.'/include.php';
 
 use Google\Cloud\Spanner\Database;
 
-startTrace();
+// startTrace();
 
 spannerContext(function(Database $db) {
     $start = microtime(true);
