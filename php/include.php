@@ -15,15 +15,21 @@ function startTrace()
             'options' => json_encode($options),
         ]];
     });
+    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'createSession');
+    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'runTransaction');
 
-    opencensus_trace_method(\Grpc\Call::class, 'startBatch', function($scope, $batch) {
-        return ['attributes' => ['batch' => json_encode($batch)]];
+    opencensus_trace_method(\Google\Cloud\Spanner\Result::class, 'setResultData', function($scope, $result, $format) {
+        return ['attributes' => ['result' => json_encode($result)]];
     });
 
-    \OpenCensus\Trace\Tracer::start(new \OpenCensus\Trace\Exporter\OneLineEchoExporter());
+    \OpenCensus\Trace\Integrations\Grpc::load();
+
+    // $exporter = new \OpenCensus\Trace\Exporter\OneLineEchoExporter();
+    $exporter = new \OpenCensus\Trace\Exporter\StackdriverExporter();
+    \OpenCensus\Trace\Tracer::start($exporter);
 }
 
-function spannerContext(Closure $func, CacheItemPoolInterface $authCache = null, SessionPoolInterface $sessionPool = null)
+function spannerClientContext(Closure $func, CacheItemPoolInterface $authCache = null)
 {
     $instanceId = getenv('SPANNER_INSTANCE_ID');
     $databaseId = getenv('SPANNER_DATABASE_ID');
@@ -36,15 +42,23 @@ function spannerContext(Closure $func, CacheItemPoolInterface $authCache = null,
     ];
     $spanner = new SpannerClient($spannerClientOptions);
 
-    if ($sessionPool === null) {
-        $sessionCacheItemPool = new SysVCacheItemPool();
-        $sessionPool =  new CacheSessionPool($sessionCacheItemPool, [
-            'minSession' => 10,
-        ]);
-    }
-    $databaseOptions = [
-        'sessionPool' => $sessionPool,
-    ];
-    $db = $spanner->connect($instanceId, $databaseId, $databaseOptions);
-    return $func($db);
+    return $func($spanner, $instanceId, $databaseId);
+}
+
+function spannerDbContext(Closure $func, CacheItemPoolInterface $authCache = null, SessionPoolInterface $sessionPool = null)
+{
+    return spannerClientContext(function(SpannerClient $client, $instanceId, $databaseId) use ($sessionPool, $func) {
+        if ($sessionPool === null) {
+            $sessionCacheItemPool = new SysVCacheItemPool();
+            $sessionPool = new CacheSessionPool($sessionCacheItemPool, [
+                'minSession' => 10,
+            ]);
+        }
+        $databaseOptions = [
+            'sessionPool' => $sessionPool,
+        ];
+        \OpenCensus\Trace\Tracer::
+        $db = $client->connect($instanceId, $databaseId, $databaseOptions);
+        return $func($db);
+    }, $authCache);
 }
