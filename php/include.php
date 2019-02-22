@@ -18,12 +18,6 @@ function startTrace()
     opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'createSession');
     opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'runTransaction');
 
-    opencensus_trace_method(\Google\Cloud\Spanner\Result::class, 'setResultData', function($scope, $result, $format) {
-        return ['attributes' => ['result' => json_encode($result)]];
-    });
-
-    \OpenCensus\Trace\Integrations\Grpc::load();
-
     // $exporter = new \OpenCensus\Trace\Exporter\OneLineEchoExporter();
     $exporter = new \OpenCensus\Trace\Exporter\StackdriverExporter();
     \OpenCensus\Trace\Tracer::start($exporter);
@@ -57,7 +51,6 @@ function spannerDbContext(Closure $func, CacheItemPoolInterface $authCache = nul
         $databaseOptions = [
             'sessionPool' => $sessionPool,
         ];
-        \OpenCensus\Trace\Tracer::
         $db = $client->connect($instanceId, $databaseId, $databaseOptions);
         return $func($db);
     }, $authCache);
