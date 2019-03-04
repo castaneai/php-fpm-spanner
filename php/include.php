@@ -6,6 +6,7 @@ use Google\Cloud\Spanner\Session\SessionPoolInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Google\Cloud\Spanner\Session\CacheSessionPool;
 use Google\Auth\Cache\SysVCacheItemPool;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 function startTrace()
 {
@@ -43,7 +44,7 @@ function spannerDbContext(Closure $func, CacheItemPoolInterface $authCache = nul
 {
     return spannerClientContext(function(SpannerClient $client, $instanceId, $databaseId) use ($sessionPool, $func) {
         if ($sessionPool === null) {
-            $sessionCacheItemPool = new SysVCacheItemPool();
+            $sessionCacheItemPool = new FilesystemAdapter('spanner-session', 0, __DIR__.'/cache');
             $sessionPool = new CacheSessionPool($sessionCacheItemPool, [
                 'minSession' => 10,
             ]);
