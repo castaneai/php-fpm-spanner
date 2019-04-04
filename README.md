@@ -8,4 +8,13 @@ vi php/.env
 docker-compose up -d
 docker-compose run php composer install
 curl http://localhost:8080
+
+# with XDebug
+
+docker-compose exec php vi /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+# Add two lines
+xdebug.remote_enable=1
+xdebug.remote_host=host.docker.internal
+
+curl http://localhost:8080?XDEBUG_SESSION_START=1
 ```

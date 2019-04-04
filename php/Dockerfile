@@ -1,9 +1,9 @@
 FROM php:7.2-fpm-alpine
 
 RUN apk add --no-cache --virtual=.build-deps zlib-dev autoconf gcc g++ make \
-  && pecl install grpc protobuf opencensus-alpha apcu igbinary \
+  && pecl install grpc protobuf opencensus-alpha apcu igbinary xdebug \
   && docker-php-ext-install sysvshm opcache \
-  && docker-php-ext-enable grpc protobuf opencensus apcu igbinary \
+  && docker-php-ext-enable grpc protobuf opencensus apcu igbinary xdebug \
   && apk del .build-deps \
   && apk del *-dev
 
