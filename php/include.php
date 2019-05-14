@@ -16,6 +16,33 @@ function startTrace()
             'options' => json_encode($options),
         ]];
     });
+    opencensus_trace_method(\Google\ApiCore\Transport\GrpcTransport::class, '__construct', function ($baseStub, $hostname, $opts, $channel) {
+        return [
+            'attributes' => [
+                'backtrace' => json_encode(array_map(function($t) { return "${t['file']}:${t['line']}"; }, debug_backtrace())),
+                'hostname' => $hostname,
+                'opts' => json_encode($opts),
+                'channel' => json_encode($channel),
+            ],
+        ];
+    });
+    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'execute', function($db, $sql) {
+        return [
+            'attributes' => [
+                'sql' => $sql,
+            ],
+        ];
+    });
+
+    opencensus_trace_method(\Grpc\Call::class, 'startBatch', function($call, $batch) {
+        return [
+            'attributes' => [
+                'batch' => json_encode($batch),
+            ],
+        ];
+    });
+    opencensus_trace_method(\Google\Cloud\Spanner\SpannerClient::class, '__construct');
+    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'selectSession');
     opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'createSession');
     opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'runTransaction');
 
